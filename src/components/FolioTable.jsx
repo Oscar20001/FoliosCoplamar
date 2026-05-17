@@ -1,12 +1,42 @@
 import React, { useState } from 'react';
-import { Clock, Printer, Download, Trash, FileText, Search, Filter } from 'lucide-react';
-import { doc, deleteDoc } from 'firebase/firestore';
+import { Clock, Printer, Download, Trash, FileText, Search, Filter, Edit2, X, Save } from 'lucide-react';
+import { doc, deleteDoc, updateDoc } from 'firebase/firestore';
 import { db, isFirebaseConfigured } from '../firebase/config';
 import { format } from 'date-fns';
 
 export default function FolioTable({ folios }) {
   const [searchTerm, setSearchTerm] = useState('');
   const [filterEstado, setFilterEstado] = useState('Todos');
+  const [editingFolio, setEditingFolio] = useState(null);
+  const [editForm, setEditForm] = useState({ dirigidoA: '', asunto: '', estado: '' });
+  const [isUpdating, setIsUpdating] = useState(false);
+
+  const handleEditClick = (folio) => {
+    setEditingFolio(folio);
+    setEditForm({
+      dirigidoA: folio.dirigidoA,
+      asunto: folio.asunto,
+      estado: folio.estado
+    });
+  };
+
+  const handleUpdateFolio = async () => {
+    setIsUpdating(true);
+    try {
+      const folioRef = doc(db, 'folios_imss', editingFolio.id);
+      await updateDoc(folioRef, {
+        dirigidoA: editForm.dirigidoA,
+        asunto: editForm.asunto,
+        estado: editForm.estado
+      });
+      setEditingFolio(null);
+    } catch (error) {
+      console.error("Error al actualizar folio:", error);
+      alert("Hubo un error al guardar los cambios.");
+    } finally {
+      setIsUpdating(false);
+    }
+  };
 
   const handleEliminar = async (id) => {
     if(window.confirm("¿Estás seguro de eliminar este registro?")){
@@ -260,6 +290,13 @@ export default function FolioTable({ folios }) {
                   <td className="px-6 py-4 whitespace-nowrap text-right">
                     <div className="flex items-center justify-end gap-2">
                       <button 
+                        onClick={() => handleEditClick(folio)}
+                        title="Editar Folio"
+                        className="text-amber-500 hover:text-white bg-amber-50 hover:bg-amber-500 border border-amber-200 p-2 rounded-lg transition-all opacity-0 group-hover:opacity-100 focus:opacity-100"
+                      >
+                        <Edit2 size={16} />
+                      </button>
+                      <button 
                         onClick={() => generarPDFIndividual(folio)}
                         title="Descargar Folio en PDF"
                         className="text-imss-green hover:text-white bg-imss-light hover:bg-imss-green border border-imss-green/20 p-2 rounded-lg transition-all"
@@ -286,6 +323,86 @@ export default function FolioTable({ folios }) {
           Mostrando <span className="font-bold">{foliosToDisplay.length}</span> registros de un total de <span className="font-bold">{folios.length}</span>
         </div>
       )}
-    </div>
+
+      {/* Modal para Editar Folio */}
+      {editingFolio && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-gray-900/60 backdrop-blur-sm animate-in fade-in duration-200">
+          <div className="bg-white w-full max-w-md rounded-2xl shadow-2xl overflow-hidden animate-in zoom-in-95 duration-200">
+            <div className="bg-imss-dark px-6 py-4 flex items-center justify-between">
+              <h3 className="text-lg font-bold text-white flex items-center gap-2">
+                <Edit2 className="text-imss-gold" size={20} />
+                Editar Folio {editingFolio.num}
+              </h3>
+              <button 
+                onClick={() => setEditingFolio(null)}
+                className="text-gray-300 hover:text-white bg-white/10 p-1.5 rounded-lg transition-colors"
+              >
+                <X size={20} />
+              </button>
+            </div>
+            
+            <div className="p-6 space-y-4">
+              <div>
+                <label className="block text-xs font-bold text-gray-700 uppercase tracking-wide mb-1.5">Dirigido A</label>
+                <input 
+                  type="text" 
+                  value={editForm.dirigidoA}
+                  onChange={(e) => setEditForm({...editForm, dirigidoA: e.target.value})}
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-imss-green outline-none font-medium"
+                />
+              </div>
+              
+              <div>
+                <label className="block text-xs font-bold text-gray-700 uppercase tracking-wide mb-1.5">Asunto</label>
+                <textarea 
+                  value={editForm.asunto}
+                  onChange={(e) => setEditForm({...editForm, asunto: e.target.value})}
+                  rows="3"
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-imss-green outline-none resize-none font-medium text-gray-600"
+                ></textarea>
+              </div>
+
+              <div>
+                <label className="block text-xs font-bold text-gray-700 uppercase tracking-wide mb-1.5">Estado</label>
+                <select 
+                  value={editForm.estado}
+                  onChange={(e) => setEditForm({...editForm, estado: e.target.value})}
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-imss-green outline-none font-bold text-gray-700"
+                >
+                  <option value="Pendiente">⏳ Pendiente de Envío</option>
+                  <option value="Enviado">📨 Enviado</option>
+                  <option value="Entregado">✅ Entregado / Recibido</option>
+                  <option value="Cancelado">❌ Cancelado</option>
+                </select>
+              </div>
+
+              <div className="flex gap-3 pt-4 mt-2 border-t border-gray-100">
+                <button 
+                  onClick={() => setEditingFolio(null)}
+                  disabled={isUpdating}
+                  className="flex-1 py-2 rounded-lg font-bold text-gray-600 bg-gray-100 hover:bg-gray-200 transition-colors"
+                >
+                  Cancelar
+                </button>
+                <button 
+                  onClick={handleUpdateFolio}
+                  disabled={isUpdating || !editForm.dirigidoA || !editForm.asunto}
+                  className="flex-1 py-2 rounded-lg font-bold text-white bg-imss-green hover:bg-imss-dark transition-colors flex items-center justify-center gap-2 disabled:opacity-50"
+                >
+                  {isUpdating ? (
+                    <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                  ) : (
+                    <>
+                      <Save size={18} />
+                      Guardar Cambios
+                    </>
+                  )}
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+    </>
   );
 }
