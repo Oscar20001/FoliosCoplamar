@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Clock, Printer, Download, Trash, FileText, Search, Filter, Edit2, X, Save } from 'lucide-react';
+import { Clock, Printer, Download, Trash, FileText, Search, Filter, Edit2, X, Save, Eye } from 'lucide-react';
 import { doc, deleteDoc, updateDoc } from 'firebase/firestore';
 import { db, isFirebaseConfigured } from '../firebase/config';
 import { format } from 'date-fns';
@@ -8,8 +8,19 @@ export default function FolioTable({ folios, isAdmin }) {
   const [searchTerm, setSearchTerm] = useState('');
   const [filterEstado, setFilterEstado] = useState('Todos');
   const [editingFolio, setEditingFolio] = useState(null);
+  const [viewingFolio, setViewingFolio] = useState(null);
   const [editForm, setEditForm] = useState({ dirigidoA: '', asunto: '', estado: '' });
   const [isUpdating, setIsUpdating] = useState(false);
+
+  const handleQuickStatusChange = async (folio, newStatus) => {
+    try {
+      const folioRef = doc(db, 'folios_imss', folio.id);
+      await updateDoc(folioRef, { estado: newStatus });
+    } catch (error) {
+      console.error("Error al actualizar estado:", error);
+      alert("Hubo un error al actualizar el estado.");
+    }
+  };
 
   const handleEditClick = (folio) => {
     setEditingFolio(folio);
@@ -274,26 +285,41 @@ export default function FolioTable({ folios, isAdmin }) {
                     <div className="text-sm font-bold text-gray-900 mb-1">
                       {folio.dirigidoA}
                     </div>
-                    <div className="text-sm text-gray-600 leading-snug line-clamp-2">
+                    <button 
+                      onClick={() => setViewingFolio(folio)}
+                      className="text-sm text-gray-600 leading-snug line-clamp-2 text-left hover:text-imss-green hover:underline cursor-pointer transition-colors w-full"
+                      title="Ver detalles completos"
+                    >
                       {folio.asunto}
-                    </div>
+                    </button>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-center">
-                    <span className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold border shadow-sm ${
-                      folio.estado === 'Enviado' ? 'bg-blue-50 text-blue-700 border-blue-200' :
-                      folio.estado === 'Entregado' ? 'bg-green-50 text-green-700 border-green-200' :
-                      folio.estado === 'Cancelado' ? 'bg-red-50 text-red-700 border-red-200' :
-                      'bg-amber-50 text-amber-700 border-amber-200'
-                    }`}>
-                      {folio.estado === 'Pendiente' && '⏳ Pendiente'}
-                      {folio.estado === 'Enviado' && '📨 Enviado'}
-                      {folio.estado === 'Entregado' && '✅ Entregado'}
-                      {folio.estado === 'Cancelado' && '❌ Cancelado'}
-                      {!['Pendiente', 'Enviado', 'Entregado', 'Cancelado'].includes(folio.estado) && folio.estado}
-                    </span>
+                    <select
+                      value={folio.estado}
+                      onChange={(e) => handleQuickStatusChange(folio, e.target.value)}
+                      title="Cambiar estado rápidamente"
+                      className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold border shadow-sm outline-none cursor-pointer text-center ${
+                        folio.estado === 'Enviado' ? 'bg-blue-50 text-blue-700 border-blue-200' :
+                        folio.estado === 'Entregado' ? 'bg-green-50 text-green-700 border-green-200' :
+                        folio.estado === 'Cancelado' ? 'bg-red-50 text-red-700 border-red-200' :
+                        'bg-amber-50 text-amber-700 border-amber-200'
+                      }`}
+                    >
+                      <option value="Pendiente">⏳ Pendiente</option>
+                      <option value="Enviado">📨 Enviado</option>
+                      <option value="Entregado">✅ Entregado</option>
+                      <option value="Cancelado">❌ Cancelado</option>
+                    </select>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-right">
                     <div className="flex items-center justify-end gap-2">
+                      <button 
+                        onClick={() => setViewingFolio(folio)}
+                        title="Ver Detalles"
+                        className="text-blue-500 hover:text-white bg-blue-50 hover:bg-blue-500 border border-blue-200 p-2 rounded-lg transition-all opacity-0 group-hover:opacity-100 focus:opacity-100"
+                      >
+                        <Eye size={16} />
+                      </button>
                       <button 
                         onClick={() => handleEditClick(folio)}
                         title="Editar Folio"
@@ -331,6 +357,82 @@ export default function FolioTable({ folios, isAdmin }) {
         </div>
       )}
       </div>
+
+      {/* Modal para Ver Detalles del Folio */}
+      {viewingFolio && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-gray-900/60 backdrop-blur-sm animate-in fade-in duration-200">
+          <div className="bg-white w-full max-w-md rounded-2xl shadow-2xl overflow-hidden animate-in zoom-in-95 duration-200">
+            <div className="bg-imss-green px-6 py-4 flex items-center justify-between border-b-4 border-imss-gold">
+              <h3 className="text-lg font-bold text-white flex items-center gap-2">
+                <FileText className="text-imss-gold" size={20} />
+                Detalles del Folio {viewingFolio.num}
+              </h3>
+              <button 
+                onClick={() => setViewingFolio(null)}
+                className="text-gray-200 hover:text-white bg-white/10 p-1.5 rounded-lg transition-colors"
+              >
+                <X size={20} />
+              </button>
+            </div>
+            
+            <div className="p-6 space-y-5">
+              <div className="flex justify-between items-center border-b border-gray-100 pb-3">
+                <div>
+                  <p className="text-xs font-bold text-gray-500 uppercase tracking-wider">Número</p>
+                  <p className="text-2xl font-black text-gray-900">{viewingFolio.num}</p>
+                </div>
+                <div className="text-right">
+                  <p className="text-xs font-bold text-gray-500 uppercase tracking-wider">Fecha</p>
+                  <p className="text-sm font-bold text-gray-800">{viewingFolio.fecha.split('-').reverse().join('/')}</p>
+                </div>
+              </div>
+
+              <div>
+                <p className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-1">Dirigido A</p>
+                <p className="text-sm font-bold text-gray-800">{viewingFolio.dirigidoA}</p>
+              </div>
+
+              <div>
+                <p className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-1">Asunto</p>
+                <div className="bg-gray-50 p-3 rounded-lg border border-gray-100 max-h-32 overflow-y-auto">
+                  <p className="text-sm text-gray-700 whitespace-pre-wrap">{viewingFolio.asunto}</p>
+                </div>
+              </div>
+
+              <div className="flex justify-between items-center pt-2">
+                <div>
+                  <p className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-1">Estado Actual</p>
+                  <span className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold border shadow-sm ${
+                      viewingFolio.estado === 'Enviado' ? 'bg-blue-50 text-blue-700 border-blue-200' :
+                      viewingFolio.estado === 'Entregado' ? 'bg-green-50 text-green-700 border-green-200' :
+                      viewingFolio.estado === 'Cancelado' ? 'bg-red-50 text-red-700 border-red-200' :
+                      'bg-amber-50 text-amber-700 border-amber-200'
+                  }`}>
+                    {viewingFolio.estado === 'Pendiente' && '⏳ Pendiente'}
+                    {viewingFolio.estado === 'Enviado' && '📨 Enviado'}
+                    {viewingFolio.estado === 'Entregado' && '✅ Entregado'}
+                    {viewingFolio.estado === 'Cancelado' && '❌ Cancelado'}
+                    {!['Pendiente', 'Enviado', 'Entregado', 'Cancelado'].includes(viewingFolio.estado) && viewingFolio.estado}
+                  </span>
+                </div>
+                <div className="text-right">
+                  <p className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-1">Registrado a las</p>
+                  <p className="text-sm text-gray-600 font-medium">{new Date(viewingFolio.createdAt).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</p>
+                </div>
+              </div>
+
+              <div className="pt-4 mt-2 border-t border-gray-100">
+                <button 
+                  onClick={() => setViewingFolio(null)}
+                  className="w-full py-2.5 rounded-lg font-bold text-gray-600 bg-gray-100 hover:bg-gray-200 transition-colors"
+                >
+                  Cerrar
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Modal para Editar Folio */}
       {editingFolio && (
