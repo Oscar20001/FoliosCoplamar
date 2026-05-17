@@ -4,7 +4,7 @@ import { doc, deleteDoc, updateDoc } from 'firebase/firestore';
 import { db, isFirebaseConfigured } from '../firebase/config';
 import { format } from 'date-fns';
 
-export default function FolioTable({ folios }) {
+export default function FolioTable({ folios, isAdmin }) {
   const [searchTerm, setSearchTerm] = useState('');
   const [filterEstado, setFilterEstado] = useState('Todos');
   const [editingFolio, setEditingFolio] = useState(null);
@@ -39,6 +39,10 @@ export default function FolioTable({ folios }) {
   };
 
   const handleEliminar = async (id) => {
+    if (!isAdmin) {
+      alert("No tienes permisos para eliminar folios. Activa el modo Administrador.");
+      return;
+    }
     if(window.confirm("¿Estás seguro de eliminar este registro?")){
       try {
         await deleteDoc(doc(db, 'folios_imss', id));
@@ -303,13 +307,15 @@ export default function FolioTable({ folios }) {
                       >
                         <Download size={16} />
                       </button>
-                      <button 
-                        onClick={() => handleEliminar(folio.id)}
-                        title="Eliminar Registro"
-                        className="text-red-500 hover:text-white bg-red-50 hover:bg-red-500 border border-red-200 p-2 rounded-lg transition-all opacity-0 group-hover:opacity-100 focus:opacity-100"
-                      >
-                        <Trash size={16} />
-                      </button>
+                      {isAdmin && (
+                        <button 
+                          onClick={() => handleEliminar(folio.id)}
+                          title="Eliminar Registro"
+                          className="text-red-500 hover:text-white bg-red-50 hover:bg-red-500 border border-red-200 p-2 rounded-lg transition-all opacity-0 group-hover:opacity-100 focus:opacity-100"
+                        >
+                          <Trash size={16} />
+                        </button>
+                      )}
                     </div>
                   </td>
                 </tr>

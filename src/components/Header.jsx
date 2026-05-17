@@ -1,7 +1,24 @@
 import React from 'react';
 import { isFirebaseConfigured } from '../firebase/config';
+import { Lock, Unlock } from 'lucide-react';
 
-export default function Header() {
+export default function Header({ isAdmin, setIsAdmin }) {
+  const handleAdminToggle = () => {
+    if (isAdmin) {
+      setIsAdmin(false);
+      localStorage.removeItem('imss_admin_mode');
+    } else {
+      const password = window.prompt("Introduce la contraseña de administrador para habilitar la eliminación de folios:");
+      if (password === "chiapas2026") {
+        setIsAdmin(true);
+        localStorage.setItem('imss_admin_mode', 'true');
+        alert("¡Modo Administrador activado! Ahora puedes eliminar folios.");
+      } else if (password !== null) {
+        alert("Contraseña incorrecta.");
+      }
+    }
+  };
+
   return (
     <header className="bg-white shadow-md relative border-b-4 border-imss-gold">
       <div className="max-w-7xl mx-auto px-4 py-4 sm:px-6 lg:px-8 flex items-center justify-between">
@@ -20,7 +37,7 @@ export default function Header() {
             <p className="text-xs text-gray-500 font-medium">OFICINA DE PERSONAL Y PRESUPUESTO IMSS-BIENESTAR Y PNP</p>
           </div>
         </div>
-        <div className="hidden lg:flex items-center gap-3">
+        <div className="hidden lg:flex items-center gap-4">
           <div className="bg-green-50 px-4 py-2.5 rounded-lg border border-green-100 flex items-center gap-3">
             <div className="relative flex h-3 w-3">
               <span className={`animate-ping absolute inline-flex h-full w-full rounded-full opacity-75 ${isFirebaseConfigured ? 'bg-imss-green' : 'bg-red-500'}`}></span>
@@ -33,6 +50,19 @@ export default function Header() {
               </span>
             </div>
           </div>
+          
+          <button 
+            onClick={handleAdminToggle}
+            title={isAdmin ? "Desactivar Modo Administrador" : "Activar Modo Administrador"}
+            className={`flex items-center gap-1.5 px-3 py-2 rounded-lg border text-xs font-bold transition-all ${
+              isAdmin 
+                ? "bg-imss-dark text-white border-imss-dark shadow-md" 
+                : "bg-white text-gray-400 border-gray-200 hover:bg-gray-50 hover:text-gray-600"
+            }`}
+          >
+            {isAdmin ? <Unlock size={14} /> : <Lock size={14} />}
+            {isAdmin ? "Admin Activo" : "Admin"}
+          </button>
         </div>
       </div>
     </header>
