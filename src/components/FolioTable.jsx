@@ -176,8 +176,9 @@ export default function FolioTable({ folios, isAdmin }) {
   });
 
   return (
-    <div className="bg-white rounded-2xl shadow-lg border border-gray-100 overflow-hidden flex flex-col h-full">
-      <div className="bg-white px-6 py-5 border-b border-gray-200 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+    <>
+      <div className="bg-white rounded-2xl shadow-lg border border-gray-100 overflow-hidden flex flex-col h-full">
+        <div className="bg-white px-6 py-5 border-b border-gray-200 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
         <div>
           <h2 className="text-xl font-black text-gray-800 flex items-center gap-2">
             <span className="text-imss-gold"><Clock size={24} /></span>
@@ -329,6 +330,7 @@ export default function FolioTable({ folios, isAdmin }) {
           Mostrando <span className="font-bold">{foliosToDisplay.length}</span> registros de un total de <span className="font-bold">{folios.length}</span>
         </div>
       )}
+      </div>
 
       {/* Modal para Editar Folio */}
       {editingFolio && (
