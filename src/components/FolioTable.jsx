@@ -12,6 +12,7 @@ export default function FolioTable({ folios, isAdmin }) {
   const [viewingFolio, setViewingFolio] = useState(null);
   const [editForm, setEditForm] = useState({ dirigidoA: '', asunto: '', estado: '' });
   const [isUpdating, setIsUpdating] = useState(false);
+  const [isGeneratingPdf, setIsGeneratingPdf] = useState(false);
 
   const handleQuickStatusChange = async (folio, newStatus) => {
     try {
@@ -64,15 +65,15 @@ export default function FolioTable({ folios, isAdmin }) {
     }
   };
 
-  const generarPDFIndividual = (folio) => {
-
-    const fechaFormateada = folio.fecha.split('-').reverse().join('-');
-    const element = document.createElement('div');
-    element.innerHTML = `
-      <div style="padding: 40px 60px; font-family: 'Helvetica', Arial, sans-serif; color: #333;">
-        <div style="text-align: center; border-bottom: 3px solid #006341; padding-bottom: 20px; margin-bottom: 30px; position: relative;">
-          <img src="https://upload.wikimedia.org/wikipedia/commons/b/b5/Logo_de_IMSS-Bienestar.svg" onerror="this.src='https://www.imss.gob.mx/sites/all/statics/logo_imss.png'" style="position: absolute; left: 0; top: 0; height: 60px;" alt="IMSS" crossorigin="anonymous" />
-          <h2 style="margin:0; font-size: 22px; color: #006341; text-transform: uppercase; font-weight: bold;">OOAD CHIAPAS</h2>
+  const generarPDFIndividual = async (folio) => {
+    setIsGeneratingPdf(true);
+    try {
+      const fechaFormateada = folio.fecha.split('-').reverse().join('-');
+      const element = document.createElement('div');
+      element.innerHTML = `
+        <div style="padding: 40px 60px; font-family: 'Helvetica', Arial, sans-serif; color: #333;">
+          <div style="text-align: center; border-bottom: 3px solid #006341; padding-bottom: 20px; margin-bottom: 30px; position: relative;">
+            <h2 style="margin:0; font-size: 22px; color: #006341; text-transform: uppercase; font-weight: bold;">OOAD CHIAPAS</h2>
           <h3 style="margin:8px 0 4px 0; font-size: 16px; font-weight: bold;">JEFATURA DE SERVICIOS DE DESARROLLO DE PERSONAL</h3>
           <h4 style="margin:0; font-size: 14px; font-weight: normal; color: #555;">OFICINA DE PERSONAL Y PRESUPUESTO IMSS-BIENESTAR Y PLAZAS NO PRESUPUESTARIAS</h4>
         </div>
@@ -112,16 +113,24 @@ export default function FolioTable({ folios, isAdmin }) {
       margin:       1,
       filename:     `Folio_${folio.num}_IMSS.pdf`,
       image:        { type: 'jpeg', quality: 0.98 },
-      html2canvas:  { scale: 2, useCORS: true },
+      html2canvas:  { scale: 2 },
       jsPDF:        { unit: 'in', format: 'letter', orientation: 'portrait' }
     };
 
-    html2pdf().set(opt).from(element).save();
+    try {
+      await html2pdf().set(opt).from(element).save();
+    } catch (error) {
+      console.error("Error al generar PDF individual:", error);
+      alert("Hubo un problema al generar el PDF. Revisa tu conexión o intenta de nuevo.");
+    } finally {
+      setIsGeneratingPdf(false);
+    }
   };
 
-  const generarPDFTabla = () => {
-
-    const foliosAsc = [...foliosToDisplay].sort((a, b) => parseInt(a.num) - parseInt(b.num));
+  const generarPDFTabla = async () => {
+    setIsGeneratingPdf(true);
+    try {
+      const foliosAsc = [...foliosToDisplay].sort((a, b) => parseInt(a.num) - parseInt(b.num));
 
     let tableRows = '';
     foliosAsc.forEach(f => {
@@ -140,7 +149,6 @@ export default function FolioTable({ folios, isAdmin }) {
     element.innerHTML = `
       <div style="padding: 20px; font-family: Arial, sans-serif;">
         <div style="text-align: center; margin-bottom: 20px; position: relative;">
-          <img src="https://upload.wikimedia.org/wikipedia/commons/b/b5/Logo_de_IMSS-Bienestar.svg" onerror="this.src='https://www.imss.gob.mx/sites/all/statics/logo_imss.png'" style="position: absolute; left: 0; top: 0; height: 50px;" alt="IMSS" crossorigin="anonymous" />
           <h3 style="margin: 0; font-size: 16px; color: #006341;">OOAD CHIAPAS</h3>
           <h4 style="margin: 3px 0; font-size: 14px;">JEFATURA DE SERVICIOS DE DESARROLLO DE PERSONAL</h4>
           <p style="margin: 3px 0; font-size: 12px;">OFICINA DE PERSONAL Y PRESUPUESTO IMSS-BIENESTAR Y PNP</p>
@@ -167,11 +175,17 @@ export default function FolioTable({ folios, isAdmin }) {
       margin:       0.5,
       filename:     `Reporte_Folios_${new Date().getFullYear()}.pdf`,
       image:        { type: 'jpeg', quality: 0.98 },
-      html2canvas:  { scale: 2, useCORS: true },
+      html2canvas:  { scale: 2 },
       jsPDF:        { unit: 'in', format: 'letter', orientation: 'portrait' }
     };
 
-    html2pdf().set(opt).from(element).save();
+    await html2pdf().set(opt).from(element).save();
+    } catch (error) {
+      console.error("Error al generar PDF de tabla:", error);
+      alert("Hubo un problema al generar el PDF. Revisa tu conexión o intenta de nuevo.");
+    } finally {
+      setIsGeneratingPdf(false);
+    }
   };
 
   const foliosToDisplay = folios.filter(folio => {
@@ -195,11 +209,15 @@ export default function FolioTable({ folios, isAdmin }) {
         </div>
         <button 
           onClick={generarPDFTabla}
-          disabled={!isFirebaseConfigured || foliosToDisplay.length === 0}
+          disabled={!isFirebaseConfigured || foliosToDisplay.length === 0 || isGeneratingPdf}
           className="flex items-center gap-2 text-sm font-bold bg-gray-50 text-imss-green hover:bg-imss-light px-5 py-2.5 rounded-lg border border-imss-green transition-all hover:shadow-sm disabled:opacity-50 disabled:cursor-not-allowed"
         >
-          <Printer size={18} />
-          Imprimir Reporte
+          {isGeneratingPdf ? (
+            <div className="w-5 h-5 border-2 border-imss-green border-t-transparent rounded-full animate-spin"></div>
+          ) : (
+            <Printer size={18} />
+          )}
+          {isGeneratingPdf ? 'Generando PDF...' : 'Imprimir Reporte'}
         </button>
       </div>
 
@@ -325,10 +343,15 @@ export default function FolioTable({ folios, isAdmin }) {
                       </button>
                       <button 
                         onClick={() => generarPDFIndividual(folio)}
+                        disabled={isGeneratingPdf}
                         title="Descargar Folio en PDF"
-                        className="text-imss-green hover:text-white bg-imss-light hover:bg-imss-green border border-imss-green/20 p-2 rounded-lg transition-all"
+                        className="text-imss-green hover:text-white bg-imss-light hover:bg-imss-green border border-imss-green/20 p-2 rounded-lg transition-all disabled:opacity-50"
                       >
-                        <Download size={16} />
+                        {isGeneratingPdf ? (
+                          <div className="w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin"></div>
+                        ) : (
+                          <Download size={16} />
+                        )}
                       </button>
                       {isAdmin && (
                         <button 
