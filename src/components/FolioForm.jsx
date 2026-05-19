@@ -11,9 +11,9 @@ export default function FolioForm({ user, nextFolioNum, isLimitReached }) {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errorMsg, setErrorMsg] = useState('');
   const [showConfirm, setShowConfirm] = useState(false);
-  const [customFolio, setCustomFolio] = useState('');
+  const [customFolio, setCustomFolio] = useState(null);
   
-  const displayFolio = customFolio || nextFolioNum;
+  const displayFolio = customFolio !== null ? customFolio : nextFolioNum;
 
   const handleVerificarFolio = (e) => {
     e.preventDefault();
@@ -25,7 +25,7 @@ export default function FolioForm({ user, nextFolioNum, isLimitReached }) {
       alert("Por favor, configura Firebase para usar la base de datos.");
       return;
     }
-    if (!fecha || !dirigidoA || !asunto) {
+    if (!fecha || !dirigidoA || !asunto || String(displayFolio).trim() === '') {
       setErrorMsg("Por favor completa todos los campos.");
       setTimeout(() => setErrorMsg(''), 3000);
       return;
@@ -53,7 +53,7 @@ export default function FolioForm({ user, nextFolioNum, isLimitReached }) {
       setDirigidoA('');
       setAsunto('');
       setEstado('Pendiente');
-      setCustomFolio('');
+      setCustomFolio(null);
       setErrorMsg('');
       setShowConfirm(false); // Cerramos confirmación
     } catch (error) {
