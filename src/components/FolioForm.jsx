@@ -11,6 +11,9 @@ export default function FolioForm({ user, nextFolioNum, isLimitReached }) {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errorMsg, setErrorMsg] = useState('');
   const [showConfirm, setShowConfirm] = useState(false);
+  const [customFolio, setCustomFolio] = useState('');
+  
+  const displayFolio = customFolio || nextFolioNum;
 
   const handleVerificarFolio = (e) => {
     e.preventDefault();
@@ -38,7 +41,7 @@ export default function FolioForm({ user, nextFolioNum, isLimitReached }) {
       const newId = `folio_${Date.now()}`;
       
       await setDoc(doc(collection(db, 'folios_imss'), newId), {
-        num: nextFolioNum,
+        num: displayFolio,
         fecha: fecha,
         dirigidoA: dirigidoA,
         asunto: asunto,
@@ -50,6 +53,7 @@ export default function FolioForm({ user, nextFolioNum, isLimitReached }) {
       setDirigidoA('');
       setAsunto('');
       setEstado('Pendiente');
+      setCustomFolio('');
       setErrorMsg('');
       setShowConfirm(false); // Cerramos confirmación
     } catch (error) {
@@ -89,10 +93,15 @@ export default function FolioForm({ user, nextFolioNum, isLimitReached }) {
           )}
           
           <div className="bg-gray-50 rounded-xl p-4 border border-gray-200 flex items-center justify-between">
-            <span className="text-sm font-bold text-gray-600 uppercase">Folio Asignado:</span>
-            <span className={`bg-white font-black px-4 py-1.5 rounded-lg text-xl border-2 shadow-inner ${isLimitReached ? 'text-red-500 border-red-500' : 'text-imss-dark border-imss-dark'}`}>
-              {nextFolioNum}
-            </span>
+            <label htmlFor="folioInput" className="text-sm font-bold text-gray-600 uppercase">Folio Asignado:</label>
+            <input
+              id="folioInput"
+              type="text"
+              value={displayFolio}
+              onChange={(e) => setCustomFolio(e.target.value)}
+              className={`bg-white font-black px-2 py-1.5 rounded-lg text-xl border-2 shadow-inner w-24 text-center focus:outline-none focus:ring-2 focus:ring-imss-green focus:border-transparent ${isLimitReached ? 'text-red-500 border-red-500' : 'text-imss-dark border-imss-dark'}`}
+              disabled={isLimitReached}
+            />
           </div>
 
           <div className={`space-y-5 ${isLimitReached ? 'opacity-50 pointer-events-none' : ''}`}>
@@ -196,7 +205,7 @@ export default function FolioForm({ user, nextFolioNum, isLimitReached }) {
               <div className="bg-gray-50 border border-gray-200 rounded-xl p-4 space-y-3 mb-6">
                 <div>
                   <span className="block text-[10px] uppercase font-bold text-gray-400">Folio No.</span>
-                  <span className="font-black text-imss-green text-lg">{nextFolioNum}</span>
+                  <span className="font-black text-imss-green text-lg">{displayFolio}</span>
                 </div>
                 <div>
                   <span className="block text-[10px] uppercase font-bold text-gray-400">Dirigido a</span>
