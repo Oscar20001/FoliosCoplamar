@@ -53,7 +53,7 @@ function App() {
   }, [user]);
 
   const maxNum = folios.length === 0 ? 0 : Math.max(...folios.map(f => parseInt(f.num) || 0));
-  const isLimitReached = maxNum >= 500;
+  const isLimitReached = maxNum >= 800;
 
   const getNextFolioNum = () => {
     if (isLimitReached) return "LIM";

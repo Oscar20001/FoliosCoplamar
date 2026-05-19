@@ -15,7 +15,7 @@ export default function FolioForm({ user, nextFolioNum, isLimitReached }) {
   const handleVerificarFolio = (e) => {
     e.preventDefault();
     if (isLimitReached) {
-      setErrorMsg("Se ha alcanzado el límite de 500 folios.");
+      setErrorMsg("Se ha alcanzado el límite de 800 folios.");
       return;
     }
     if (!isFirebaseConfigured) {
@@ -77,7 +77,7 @@ export default function FolioForm({ user, nextFolioNum, isLimitReached }) {
               <AlertTriangle className="text-amber-500 shrink-0 mt-0.5" size={20} />
               <div>
                 <p className="font-bold mb-1">Límite Anual Alcanzado</p>
-                <p>Se han registrado los 500 folios permitidos. Por favor revisa el Archivo Histórico.</p>
+                <p>Se han registrado los 800 folios permitidos. Por favor revisa el Archivo Histórico.</p>
               </div>
             </div>
           )}
