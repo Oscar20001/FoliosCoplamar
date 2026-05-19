@@ -1,10 +1,9 @@
 import React, { useState } from 'react';
-import { Clock, Printer, Download, Trash, FileText, Search, Filter, Edit2, X, Save, Eye, FileSpreadsheet } from 'lucide-react';
+import { Clock, Printer, Download, Trash, FileText, Search, Filter, Edit2, X, Save, Eye } from 'lucide-react';
 import { doc, deleteDoc, updateDoc } from 'firebase/firestore';
 import { db, isFirebaseConfigured } from '../firebase/config';
 import { format } from 'date-fns';
 import html2pdf from 'html2pdf.js';
-import { exportToExcel } from '../utils/excel';
 
 export default function FolioTable({ folios, isAdmin }) {
   const [searchTerm, setSearchTerm] = useState('');
@@ -194,24 +193,14 @@ export default function FolioTable({ folios, isAdmin }) {
           </h2>
           <p className="text-sm text-gray-500 mt-1">Historial sincronizado en tiempo real</p>
         </div>
-        <div className="flex gap-2">
-          <button 
-            onClick={() => exportToExcel(foliosToDisplay)}
-            disabled={!isFirebaseConfigured || foliosToDisplay.length === 0}
-            className="flex items-center gap-2 text-sm font-bold bg-green-50 text-green-700 hover:bg-green-100 px-5 py-2.5 rounded-lg border border-green-200 transition-all hover:shadow-sm disabled:opacity-50 disabled:cursor-not-allowed"
-          >
-            <FileSpreadsheet size={18} />
-            Excel
-          </button>
-          <button 
-            onClick={generarPDFTabla}
-            disabled={!isFirebaseConfigured || foliosToDisplay.length === 0}
-            className="flex items-center gap-2 text-sm font-bold bg-gray-50 text-imss-green hover:bg-imss-light px-5 py-2.5 rounded-lg border border-imss-green transition-all hover:shadow-sm disabled:opacity-50 disabled:cursor-not-allowed"
-          >
-            <Printer size={18} />
-            Imprimir Reporte (PDF)
-          </button>
-        </div>
+        <button 
+          onClick={generarPDFTabla}
+          disabled={!isFirebaseConfigured || foliosToDisplay.length === 0}
+          className="flex items-center gap-2 text-sm font-bold bg-gray-50 text-imss-green hover:bg-imss-light px-5 py-2.5 rounded-lg border border-imss-green transition-all hover:shadow-sm disabled:opacity-50 disabled:cursor-not-allowed"
+        >
+          <Printer size={18} />
+          Imprimir Reporte
+        </button>
       </div>
 
       {/* Barra de Filtros */}
