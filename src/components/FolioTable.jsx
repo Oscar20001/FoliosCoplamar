@@ -3,7 +3,6 @@ import { Clock, Printer, Download, Trash, FileText, Search, Filter, Edit2, X, Sa
 import { doc, deleteDoc, updateDoc } from 'firebase/firestore';
 import { db, isFirebaseConfigured } from '../firebase/config';
 import { format } from 'date-fns';
-import html2pdf from 'html2pdf.js';
 
 export default function FolioTable({ folios, isAdmin }) {
   const [searchTerm, setSearchTerm] = useState('');
@@ -65,129 +64,6 @@ export default function FolioTable({ folios, isAdmin }) {
     }
   };
 
-  const generarPDFIndividual = async (folio) => {
-    setIsGeneratingPdf(true);
-    try {
-      const fechaFormateada = folio.fecha.split('-').reverse().join('-');
-      const element = document.createElement('div');
-      element.innerHTML = `
-        <div style="padding: 40px 60px; font-family: 'Helvetica', Arial, sans-serif; color: #333;">
-          <div style="text-align: center; border-bottom: 3px solid #006341; padding-bottom: 20px; margin-bottom: 30px; position: relative;">
-            <h2 style="margin:0; font-size: 22px; color: #006341; text-transform: uppercase; font-weight: bold;">OOAD CHIAPAS</h2>
-          <h3 style="margin:8px 0 4px 0; font-size: 16px; font-weight: bold;">JEFATURA DE SERVICIOS DE DESARROLLO DE PERSONAL</h3>
-          <h4 style="margin:0; font-size: 14px; font-weight: normal; color: #555;">OFICINA DE PERSONAL Y PRESUPUESTO IMSS-BIENESTAR Y PLAZAS NO PRESUPUESTARIAS</h4>
-        </div>
-        
-        <div style="text-align: right; margin-bottom: 40px;">
-          <h1 style="font-size: 32px; margin: 0; color: #006341;">FOLIO NO. <strong>${folio.num}</strong></h1>
-          <p style="margin: 5px 0; font-size: 14px; color: #666; font-weight: bold;">AÑO DE REGISTRO: ${new Date().getFullYear()}</p>
-        </div>
-
-        <table style="width: 100%; border-collapse: collapse; margin-top: 20px; font-size: 14px;">
-          <tr>
-            <td style="padding: 15px; border: 1px solid #ddd; width: 30%; background-color: #f4f6f5;"><strong>Fecha del Documento:</strong></td>
-            <td style="padding: 15px; border: 1px solid #ddd;">${fechaFormateada}</td>
-          </tr>
-          <tr>
-            <td style="padding: 15px; border: 1px solid #ddd; background-color: #f4f6f5;"><strong>Dirigido a:</strong></td>
-            <td style="padding: 15px; border: 1px solid #ddd;">${folio.dirigidoA}</td>
-          </tr>
-          <tr>
-            <td style="padding: 15px; border: 1px solid #ddd; background-color: #f4f6f5;"><strong>Asunto:</strong></td>
-            <td style="padding: 15px; border: 1px solid #ddd;">${folio.asunto}</td>
-          </tr>
-          <tr>
-            <td style="padding: 15px; border: 1px solid #ddd; background-color: #f4f6f5;"><strong>Estado Actual:</strong></td>
-            <td style="padding: 15px; border: 1px solid #ddd; font-weight: bold; color: #006341;">${folio.estado}</td>
-          </tr>
-        </table>
-
-        <div style="margin-top: 80px; font-size: 12px; color: #888; border-top: 1px solid #eee; padding-top: 10px; text-align: center;">
-          <p>Documento generado por el Sistema de Control de Folios Oficiales</p>
-          <p>Timestamp: ${new Date(folio.createdAt).toLocaleString('es-MX')}</p>
-        </div>
-      </div>
-    `;
-
-    const opt = {
-      margin:       1,
-      filename:     `Folio_${folio.num}_IMSS.pdf`,
-      image:        { type: 'jpeg', quality: 0.98 },
-      html2canvas:  { scale: 2 },
-      jsPDF:        { unit: 'in', format: 'letter', orientation: 'portrait' }
-    };
-
-    try {
-      await html2pdf().set(opt).from(element).save();
-    } catch (error) {
-      console.error("Error al generar PDF individual:", error);
-      alert("Hubo un problema al generar el PDF. Revisa tu conexión o intenta de nuevo.");
-    } finally {
-      setIsGeneratingPdf(false);
-    }
-  };
-
-  const generarPDFTabla = async () => {
-    setIsGeneratingPdf(true);
-    try {
-      const foliosAsc = [...foliosToDisplay].sort((a, b) => parseInt(a.num) - parseInt(b.num));
-
-    let tableRows = '';
-    foliosAsc.forEach(f => {
-      tableRows += `
-        <tr>
-          <td style="border: 1px solid #555; padding: 6px; text-align: center;">${f.num}</td>
-          <td style="border: 1px solid #555; padding: 6px; text-align: center;">${f.fecha.split('-').reverse().join('-')}</td>
-          <td style="border: 1px solid #555; padding: 6px;">${f.dirigidoA}</td>
-          <td style="border: 1px solid #555; padding: 6px;">${f.asunto}</td>
-          <td style="border: 1px solid #555; padding: 6px; text-align: center;">${f.estado}</td>
-        </tr>
-      `;
-    });
-
-    const element = document.createElement('div');
-    element.innerHTML = `
-      <div style="padding: 20px; font-family: Arial, sans-serif;">
-        <div style="text-align: center; margin-bottom: 20px; position: relative;">
-          <h3 style="margin: 0; font-size: 16px; color: #006341;">OOAD CHIAPAS</h3>
-          <h4 style="margin: 3px 0; font-size: 14px;">JEFATURA DE SERVICIOS DE DESARROLLO DE PERSONAL</h4>
-          <p style="margin: 3px 0; font-size: 12px;">OFICINA DE PERSONAL Y PRESUPUESTO IMSS-BIENESTAR Y PNP</p>
-          <h4 style="margin-top: 15px; font-size: 14px; background-color: #006341; color: white; padding: 6px;">CONTROL DE FOLIOS DE OFICIOS AÑO ${new Date().getFullYear()}</h4>
-        </div>
-        <table style="width: 100%; border-collapse: collapse; font-size: 11px; margin-top: 10px;">
-          <thead>
-            <tr style="background-color: #e5e7eb;">
-              <th style="border: 1px solid #555; padding: 8px; width: 6%;">NUM.</th>
-              <th style="border: 1px solid #555; padding: 8px; width: 10%;">FECHA</th>
-              <th style="border: 1px solid #555; padding: 8px; width: 34%;">DIRIGIDO A</th>
-              <th style="border: 1px solid #555; padding: 8px; width: 35%;">ASUNTO</th>
-              <th style="border: 1px solid #555; padding: 8px; width: 15%;">ESTADO</th>
-            </tr>
-          </thead>
-          <tbody>
-            ${tableRows}
-          </tbody>
-        </table>
-      </div>
-    `;
-
-    const opt = {
-      margin:       0.5,
-      filename:     `Reporte_Folios_${new Date().getFullYear()}.pdf`,
-      image:        { type: 'jpeg', quality: 0.98 },
-      html2canvas:  { scale: 2 },
-      jsPDF:        { unit: 'in', format: 'letter', orientation: 'portrait' }
-    };
-
-    await html2pdf().set(opt).from(element).save();
-    } catch (error) {
-      console.error("Error al generar PDF de tabla:", error);
-      alert("Hubo un problema al generar el PDF. Revisa tu conexión o intenta de nuevo.");
-    } finally {
-      setIsGeneratingPdf(false);
-    }
-  };
-
   const foliosToDisplay = folios.filter(folio => {
     const matchesSearch = folio.dirigidoA.toLowerCase().includes(searchTerm.toLowerCase()) || 
                           folio.asunto.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -207,18 +83,6 @@ export default function FolioTable({ folios, isAdmin }) {
           </h2>
           <p className="text-sm text-gray-500 mt-1">Historial sincronizado en tiempo real</p>
         </div>
-        <button 
-          onClick={generarPDFTabla}
-          disabled={!isFirebaseConfigured || foliosToDisplay.length === 0 || isGeneratingPdf}
-          className="flex items-center gap-2 text-sm font-bold bg-gray-50 text-imss-green hover:bg-imss-light px-5 py-2.5 rounded-lg border border-imss-green transition-all hover:shadow-sm disabled:opacity-50 disabled:cursor-not-allowed"
-        >
-          {isGeneratingPdf ? (
-            <div className="w-5 h-5 border-2 border-imss-green border-t-transparent rounded-full animate-spin"></div>
-          ) : (
-            <Printer size={18} />
-          )}
-          {isGeneratingPdf ? 'Generando PDF...' : 'Imprimir Reporte'}
-        </button>
       </div>
 
       {/* Barra de Filtros */}
@@ -340,18 +204,6 @@ export default function FolioTable({ folios, isAdmin }) {
                         className="text-amber-500 hover:text-white bg-amber-50 hover:bg-amber-500 border border-amber-200 p-2 rounded-lg transition-all opacity-0 group-hover:opacity-100 focus:opacity-100"
                       >
                         <Edit2 size={16} />
-                      </button>
-                      <button 
-                        onClick={() => generarPDFIndividual(folio)}
-                        disabled={isGeneratingPdf}
-                        title="Descargar Folio en PDF"
-                        className="text-imss-green hover:text-white bg-imss-light hover:bg-imss-green border border-imss-green/20 p-2 rounded-lg transition-all disabled:opacity-50"
-                      >
-                        {isGeneratingPdf ? (
-                          <div className="w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin"></div>
-                        ) : (
-                          <Download size={16} />
-                        )}
                       </button>
                       {isAdmin && (
                         <button 
