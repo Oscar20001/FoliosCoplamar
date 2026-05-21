@@ -5,12 +5,14 @@ import Header from './components/Header';
 import FolioForm from './components/FolioForm';
 import FolioTable from './components/FolioTable';
 import ArchiveFab from './components/ArchiveFab';
+import Tutorial from './components/Tutorial';
 
 function App() {
   const [user, setUser] = useState(null);
   const [folios, setFolios] = useState([]);
   const [loading, setLoading] = useState(true);
   const [isAdmin, setIsAdmin] = useState(() => localStorage.getItem('imss_admin_mode') === 'true');
+  const [runTutorial, setRunTutorial] = useState(false);
 
   useEffect(() => {
     if (!isFirebaseConfigured) {
@@ -76,7 +78,8 @@ function App() {
 
   return (
     <div className="min-h-screen bg-gray-100 font-sans pb-10">
-      <Header isAdmin={isAdmin} setIsAdmin={setIsAdmin} />
+      <Header isAdmin={isAdmin} setIsAdmin={setIsAdmin} onStartTutorial={() => setRunTutorial(true)} />
+      <Tutorial run={runTutorial} setRun={setRunTutorial} />
       
       <main className="max-w-7xl mx-auto px-4 py-8 sm:px-6 lg:px-8">
         {!isFirebaseConfigured && (

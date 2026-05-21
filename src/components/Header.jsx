@@ -1,8 +1,8 @@
 import React from 'react';
 import { isFirebaseConfigured } from '../firebase/config';
-import { Lock, Unlock } from 'lucide-react';
+import { Lock, Unlock, HelpCircle } from 'lucide-react';
 
-export default function Header({ isAdmin, setIsAdmin }) {
+export default function Header({ isAdmin, setIsAdmin, onStartTutorial }) {
   const handleAdminToggle = () => {
     if (isAdmin) {
       setIsAdmin(false);
@@ -38,6 +38,15 @@ export default function Header({ isAdmin, setIsAdmin }) {
           </div>
         </div>
         <div className="hidden lg:flex items-center gap-4">
+          <button
+            onClick={onStartTutorial}
+            className="flex items-center gap-1.5 px-3 py-2 rounded-lg border bg-white text-imss-green border-imss-green hover:bg-imss-green hover:text-white font-bold text-xs transition-all tour-help shadow-sm"
+            title="Ver Tutorial"
+          >
+            <HelpCircle size={14} />
+            Tutorial
+          </button>
+          
           <div className="bg-green-50 px-4 py-2.5 rounded-lg border border-green-100 flex items-center gap-3">
             <div className="relative flex h-3 w-3">
               <span className={`animate-ping absolute inline-flex h-full w-full rounded-full opacity-75 ${isFirebaseConfigured ? 'bg-imss-green' : 'bg-red-500'}`}></span>

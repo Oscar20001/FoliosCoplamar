@@ -14,7 +14,7 @@ export default function ArchiveFab({ folios }) {
       {/* Floating Action Button */}
       <button
         onClick={() => setIsOpen(true)}
-        className="fixed bottom-8 right-8 z-40 bg-imss-gold text-white p-4 rounded-full shadow-2xl hover:bg-yellow-600 hover:scale-110 transition-all duration-300 group flex items-center justify-center"
+        className="fixed bottom-8 right-8 z-40 bg-imss-gold text-white p-4 rounded-full shadow-2xl hover:bg-yellow-600 hover:scale-110 transition-all duration-300 group flex items-center justify-center tour-archive"
         title="Archivo Histórico"
       >
         <Archive size={28} />

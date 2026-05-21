@@ -75,7 +75,7 @@ export default function FolioForm({ user, nextFolioNum, isLimitReached }) {
           <p className="text-emerald-100 text-xs mt-1">Completa los datos para asignar un número</p>
         </div>
         
-        <form onSubmit={handleVerificarFolio} className="p-6 space-y-6">
+        <form onSubmit={handleVerificarFolio} className="p-6 space-y-6 tour-form">
           {isLimitReached && (
             <div className="bg-amber-50 text-amber-800 p-4 rounded-xl text-sm font-medium border border-amber-200 flex items-start gap-3">
               <AlertTriangle className="text-amber-500 shrink-0 mt-0.5" size={20} />
@@ -163,13 +163,12 @@ export default function FolioForm({ user, nextFolioNum, isLimitReached }) {
               <select 
                 value={estado}
                 onChange={(e) => setEstado(e.target.value)}
-                className="input-field cursor-pointer"
+                className="input-field cursor-pointer tour-form-status"
                 disabled={isLimitReached}
               >
                 <option value="Pendiente">⏳ Pendiente de Envío</option>
                 <option value="Enviado">📨 Enviado</option>
                 <option value="Entregado">✅ Entregado / Recibido</option>
-                <option value="Cancelado">❌ Cancelado</option>
               </select>
             </div>
           </div>

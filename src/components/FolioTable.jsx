@@ -74,7 +74,7 @@ export default function FolioTable({ folios, isAdmin }) {
 
   return (
     <>
-      <div className="bg-white rounded-2xl shadow-lg border border-gray-100 overflow-hidden flex flex-col h-full">
+      <div className="bg-white rounded-2xl shadow-lg border border-gray-100 overflow-hidden flex flex-col h-full tour-table">
         <div className="bg-white px-6 py-5 border-b border-gray-200 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
         <div>
           <h2 className="text-xl font-black text-gray-800 flex items-center gap-2">
@@ -112,7 +112,6 @@ export default function FolioTable({ folios, isAdmin }) {
             <option value="Pendiente">Pendiente de Envío</option>
             <option value="Enviado">Enviado</option>
             <option value="Entregado">Entregado / Recibido</option>
-            <option value="Cancelado">Cancelado</option>
           </select>
         </div>
       </div>
@@ -179,14 +178,12 @@ export default function FolioTable({ folios, isAdmin }) {
                       className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold border shadow-sm outline-none cursor-pointer text-center ${
                         folio.estado === 'Enviado' ? 'bg-blue-50 text-blue-700 border-blue-200' :
                         folio.estado === 'Entregado' ? 'bg-green-50 text-green-700 border-green-200' :
-                        folio.estado === 'Cancelado' ? 'bg-red-50 text-red-700 border-red-200' :
                         'bg-amber-50 text-amber-700 border-amber-200'
                       }`}
                     >
                       <option value="Pendiente">⏳ Pendiente</option>
                       <option value="Enviado">📨 Enviado</option>
                       <option value="Entregado">✅ Entregado</option>
-                      <option value="Cancelado">❌ Cancelado</option>
                     </select>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-right">
@@ -276,14 +273,12 @@ export default function FolioTable({ folios, isAdmin }) {
                   <span className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold border shadow-sm ${
                       viewingFolio.estado === 'Enviado' ? 'bg-blue-50 text-blue-700 border-blue-200' :
                       viewingFolio.estado === 'Entregado' ? 'bg-green-50 text-green-700 border-green-200' :
-                      viewingFolio.estado === 'Cancelado' ? 'bg-red-50 text-red-700 border-red-200' :
                       'bg-amber-50 text-amber-700 border-amber-200'
                   }`}>
                     {viewingFolio.estado === 'Pendiente' && '⏳ Pendiente'}
                     {viewingFolio.estado === 'Enviado' && '📨 Enviado'}
                     {viewingFolio.estado === 'Entregado' && '✅ Entregado'}
-                    {viewingFolio.estado === 'Cancelado' && '❌ Cancelado'}
-                    {!['Pendiente', 'Enviado', 'Entregado', 'Cancelado'].includes(viewingFolio.estado) && viewingFolio.estado}
+                    {!['Pendiente', 'Enviado', 'Entregado'].includes(viewingFolio.estado) && viewingFolio.estado}
                   </span>
                 </div>
                 <div className="text-right">
@@ -353,7 +348,6 @@ export default function FolioTable({ folios, isAdmin }) {
                   <option value="Pendiente">⏳ Pendiente de Envío</option>
                   <option value="Enviado">📨 Enviado</option>
                   <option value="Entregado">✅ Entregado / Recibido</option>
-                  <option value="Cancelado">❌ Cancelado</option>
                 </select>
               </div>
 
