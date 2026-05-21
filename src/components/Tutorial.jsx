@@ -1,18 +1,29 @@
 import React, { useState, useEffect } from 'react';
 import { Joyride, STATUS } from 'react-joyride';
 
-export default function Tutorial({ run, setRun }) {
+export default function Tutorial({ tourKey }) {
   const [showPrompt, setShowPrompt] = useState(false);
+  const [run, setRun] = useState(false);
+
+  useEffect(() => {
+    if (tourKey > 0) {
+      setRun(false);
+      const timer = setTimeout(() => {
+        setRun(true);
+      }, 50);
+      return () => clearTimeout(timer);
+    }
+  }, [tourKey]);
 
   useEffect(() => {
     const hasSeenTutorial = localStorage.getItem('imss_has_seen_tutorial');
     const timer = setTimeout(() => {
-      if (!hasSeenTutorial && !run) {
+      if (!hasSeenTutorial && tourKey === 0) {
         setShowPrompt(true);
       }
     }, 500);
     return () => clearTimeout(timer);
-  }, [run]);
+  }, [tourKey]);
 
   const handleStart = () => {
     setShowPrompt(false);

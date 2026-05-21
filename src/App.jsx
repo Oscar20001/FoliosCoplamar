@@ -12,7 +12,7 @@ function App() {
   const [folios, setFolios] = useState([]);
   const [loading, setLoading] = useState(true);
   const [isAdmin, setIsAdmin] = useState(() => localStorage.getItem('imss_admin_mode') === 'true');
-  const [runTutorial, setRunTutorial] = useState(false);
+  const [tourKey, setTourKey] = useState(0);
 
   useEffect(() => {
     if (!isFirebaseConfigured) {
@@ -78,8 +78,8 @@ function App() {
 
   return (
     <div className="min-h-screen bg-gray-100 font-sans pb-10">
-      <Header isAdmin={isAdmin} setIsAdmin={setIsAdmin} onStartTutorial={() => setRunTutorial(true)} />
-      <Tutorial run={runTutorial} setRun={setRunTutorial} />
+      <Header isAdmin={isAdmin} setIsAdmin={setIsAdmin} onStartTutorial={() => setTourKey(prev => prev + 1)} />
+      <Tutorial tourKey={tourKey} />
       
       <main className="max-w-7xl mx-auto px-4 py-8 sm:px-6 lg:px-8">
         {!isFirebaseConfigured && (
