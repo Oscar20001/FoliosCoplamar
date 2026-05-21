@@ -3,17 +3,16 @@ import { Joyride, STATUS } from 'react-joyride';
 
 export default function Tutorial({ run, setRun }) {
   const [showPrompt, setShowPrompt] = useState(false);
-  const [tourKey, setTourKey] = useState(0);
+  const [stepIndex, setStepIndex] = useState(0);
 
   useEffect(() => {
     if (run) {
-      setTourKey(prev => prev + 1);
+      setStepIndex(0);
     }
   }, [run]);
 
   useEffect(() => {
     const hasSeenTutorial = localStorage.getItem('imss_has_seen_tutorial');
-    // We give a tiny timeout just to ensure DOM is fully ready if needed
     const timer = setTimeout(() => {
       if (!hasSeenTutorial && !run) {
         setShowPrompt(true);
@@ -33,12 +32,15 @@ export default function Tutorial({ run, setRun }) {
   };
 
   const handleJoyrideCallback = (data) => {
-    const { status } = data;
+    const { status, type, action, index } = data;
     const finishedStatuses = [STATUS.FINISHED, STATUS.SKIPPED];
     
     if (finishedStatuses.includes(status)) {
       setRun(false);
+      setStepIndex(0);
       localStorage.setItem('imss_has_seen_tutorial', 'true');
+    } else if (['step:after', 'error', 'target:not_found'].includes(type)) {
+      setStepIndex(index + (action === 'prev' ? -1 : 1));
     }
   };
 
@@ -143,7 +145,7 @@ export default function Tutorial({ run, setRun }) {
       )}
 
       <Joyride
-        key={tourKey}
+        stepIndex={stepIndex}
         steps={steps}
         run={run}
         continuous={true}
