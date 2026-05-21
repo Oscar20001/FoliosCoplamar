@@ -3,13 +3,6 @@ import { Joyride, STATUS } from 'react-joyride';
 
 export default function Tutorial({ run, setRun }) {
   const [showPrompt, setShowPrompt] = useState(false);
-  const [stepIndex, setStepIndex] = useState(0);
-
-  useEffect(() => {
-    if (run) {
-      setStepIndex(0);
-    }
-  }, [run]);
 
   useEffect(() => {
     const hasSeenTutorial = localStorage.getItem('imss_has_seen_tutorial');
@@ -32,15 +25,12 @@ export default function Tutorial({ run, setRun }) {
   };
 
   const handleJoyrideCallback = (data) => {
-    const { status, type, action, index } = data;
+    const { status } = data;
     const finishedStatuses = [STATUS.FINISHED, STATUS.SKIPPED];
     
     if (finishedStatuses.includes(status)) {
       setRun(false);
-      setStepIndex(0);
       localStorage.setItem('imss_has_seen_tutorial', 'true');
-    } else if (['step:after', 'error', 'target:not_found'].includes(type)) {
-      setStepIndex(index + (action === 'prev' ? -1 : 1));
     }
   };
 
@@ -144,32 +134,33 @@ export default function Tutorial({ run, setRun }) {
         </div>
       )}
 
-      <Joyride
-        stepIndex={stepIndex}
-        steps={steps}
-        run={run}
-        continuous={true}
-        scrollToFirstStep={true}
-        showProgress={true}
-        showSkipButton={true}
-        callback={handleJoyrideCallback}
-        styles={{
-          options: {
-            primaryColor: '#006450', // imss-green
-            zIndex: 10000,
-          },
-          buttonClose: {
-            display: 'none',
-          }
-        }}
-        locale={{
-          back: 'Atrás',
-          close: 'Cerrar',
-          last: 'Finalizar',
-          next: 'Siguiente',
-          skip: 'Saltar',
-        }}
-      />
+      {run && (
+        <Joyride
+          steps={steps}
+          run={true}
+          continuous={true}
+          scrollToFirstStep={true}
+          showProgress={true}
+          showSkipButton={true}
+          callback={handleJoyrideCallback}
+          styles={{
+            options: {
+              primaryColor: '#006450', // imss-green
+              zIndex: 10000,
+            },
+            buttonClose: {
+              display: 'none',
+            }
+          }}
+          locale={{
+            back: 'Atrás',
+            close: 'Cerrar',
+            last: 'Finalizar',
+            next: 'Siguiente',
+            skip: 'Saltar',
+          }}
+        />
+      )}
     </>
   );
 }
