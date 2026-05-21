@@ -3,6 +3,13 @@ import { Joyride, STATUS } from 'react-joyride';
 
 export default function Tutorial({ run, setRun }) {
   const [showPrompt, setShowPrompt] = useState(false);
+  const [tourKey, setTourKey] = useState(0);
+
+  useEffect(() => {
+    if (run) {
+      setTourKey(prev => prev + 1);
+    }
+  }, [run]);
 
   useEffect(() => {
     const hasSeenTutorial = localStorage.getItem('imss_has_seen_tutorial');
@@ -136,6 +143,7 @@ export default function Tutorial({ run, setRun }) {
       )}
 
       <Joyride
+        key={tourKey}
         steps={steps}
         run={run}
         continuous={true}
